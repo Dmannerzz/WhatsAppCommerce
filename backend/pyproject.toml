@@ -2,7 +2,7 @@
 name = "whatsapp-commerce-backend"
 version = "0.1.0"
 description = "FastAPI backend for WhatsApp commerce arbitrage"
-requires-python = ">=3.13"
+requires-python = ">=3.12"
 dependencies = [
     "asyncpg>=0.30.0",
     "aiosqlite>=0.21.0",

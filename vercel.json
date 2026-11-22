@@ -3,7 +3,8 @@
   "services": {
     "api": {
       "root": "backend/",
-      "entrypoint": "main:app"
+      "framework": "fastapi",
+      "entrypoint": "whatsapp_agent.app:app"
     }
   },
   "rewrites": [
