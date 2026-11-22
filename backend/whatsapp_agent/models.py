@@ -11,6 +11,7 @@ from sqlalchemy import (
     Enum,
     ForeignKey,
     Index,
+    Integer,
     Numeric,
     String,
     Text,
@@ -36,6 +37,39 @@ class OrderInquiryStatus(str, enum.Enum):
 
 
 jsonb_type = JSON().with_variant(JSONB(), "postgresql")
+
+
+class BusinessSettings(Base):
+    __tablename__ = "business_settings"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, default=1)
+    wholesale_group_jid: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    wholesale_group_jids: Mapped[list[str]] = mapped_column(
+        jsonb_type, nullable=False, default=list, server_default=text("'[]'")
+    )
+    retail_group_jid: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    mum_admin_jid: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    wholesaler_jids: Mapped[list[str]] = mapped_column(
+        jsonb_type, nullable=False, default=list
+    )
+    markup_rule: Mapped[Decimal] = mapped_column(
+        Numeric(12, 2), nullable=False, default=Decimal("2500")
+    )
+    min_profit_rule: Mapped[Decimal] = mapped_column(
+        Numeric(12, 2), nullable=False, default=Decimal("500")
+    )
+    payment_instructions: Mapped[str] = mapped_column(
+        Text, nullable=False, default=""
+    )
+    automation_enabled: Mapped[bool] = mapped_column(
+        Boolean, nullable=False, default=True, server_default=text("true")
+    )
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        nullable=False,
+        server_default=func.now(),
+        onupdate=func.now(),
+    )
 
 
 class Product(Base):
@@ -143,3 +177,59 @@ class OrderInquiry(Base):
         back_populates="inquiries"
     )
     product: Mapped[Product] = relationship(back_populates="inquiries")
+
+
+class BridgeCommand(Base):
+    __tablename__ = "bridge_commands"
+    __table_args__ = (
+        Index("ix_bridge_commands_ready", "status", "available_at", "created_at"),
+    )
+
+    id: Mapped[uuid.UUID] = mapped_column(
+        Uuid(as_uuid=True), primary_key=True, default=uuid.uuid4
+    )
+    command_type: Mapped[str] = mapped_column(String(50), nullable=False)
+    payload: Mapped[dict[str, Any]] = mapped_column(jsonb_type, nullable=False)
+    status: Mapped[str] = mapped_column(
+        String(20), nullable=False, default="queued", server_default="queued"
+    )
+    result: Mapped[dict[str, Any] | None] = mapped_column(jsonb_type, nullable=True)
+    error: Mapped[str | None] = mapped_column(Text, nullable=True)
+    available_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), nullable=False, server_default=func.now()
+    )
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), nullable=False, server_default=func.now()
+    )
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        nullable=False,
+        server_default=func.now(),
+        onupdate=func.now(),
+    )
+
+
+class BridgeRuntimeState(Base):
+    __tablename__ = "bridge_runtime_state"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    state: Mapped[dict[str, Any]] = mapped_column(jsonb_type, nullable=False)
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        nullable=False,
+        server_default=func.now(),
+        onupdate=func.now(),
+    )
+
+
+class BridgeAuthFile(Base):
+    __tablename__ = "bridge_auth_files"
+
+    file_name: Mapped[str] = mapped_column(String(255), primary_key=True)
+    contents: Mapped[str] = mapped_column(Text, nullable=False)
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        nullable=False,
+        server_default=func.now(),
+        onupdate=func.now(),
+    )

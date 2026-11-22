@@ -5,6 +5,7 @@ description = "FastAPI backend for WhatsApp commerce arbitrage"
 requires-python = ">=3.13"
 dependencies = [
     "asyncpg>=0.30.0",
+    "aiosqlite>=0.21.0",
     "fastapi>=0.115.0,<0.116.0",
     "groq>=1.4.0",
     "httpx>=0.28.0",

@@ -1,7 +1,8 @@
 from functools import lru_cache
 from pathlib import Path
+from typing import Literal
 
-from pydantic import PostgresDsn, SecretStr
+from pydantic import SecretStr
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -15,18 +16,27 @@ class Settings(BaseSettings):
         extra="ignore",
     )
 
-    database_url: PostgresDsn = (
+    database_url: str = (
         "postgresql+asyncpg://whatsapp:change-me-for-local-development"
         "@localhost:5432/whatsapp_agent"
     )
     groq_api_key: SecretStr | None = None
     llm_model: str = "llama-3.3-70b-versatile"
+    vision_model: str = "qwen/qwen3.8-27b"
+    admin_username: str = "admin"
+    admin_password: SecretStr | None = None
+    bridge_api_url: str = "http://localhost:3001"
+    bridge_transport: Literal["http", "database"] = "http"
+    bridge_api_secret: SecretStr | None = None
     wholesale_group_jid: str | None = None
+    wholesale_group_jids: str = ""
     retail_group_jid: str | None = None
     mum_admin_jid: str | None = None
+    wholesaler_jids: str = ""
     markup_rule: int = 2500
     min_profit_rule: int = 500
     bridge_webhook_secret: SecretStr | None = None
+    media_dir: Path = Path("media")
 
 
 @lru_cache

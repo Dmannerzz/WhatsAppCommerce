@@ -1,0 +1,577 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="color-scheme" content="light">
+    <title>WhatsApp Commerce · Dashboard</title>
+    <style>
+      :root {
+        font-family: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+        color: #202b25;
+        background: #f4f6f2;
+        font-synthesis: none;
+        text-rendering: optimizeLegibility;
+        --green: #176746;
+        --green-dark: #104c34;
+        --muted: #718078;
+        --line: #e5eae4;
+        --surface: #fff;
+        --amber: #996100;
+      }
+      * { box-sizing: border-box; }
+      body { margin: 0; }
+      button, input, select { font: inherit; }
+      button, .button-link {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border: 0;
+        border-radius: 9px;
+        padding: 10px 14px;
+        color: white;
+        background: var(--green);
+        font-weight: 650;
+        text-decoration: none;
+        cursor: pointer;
+      }
+      button:hover, .button-link:hover { background: var(--green-dark); }
+      button.secondary { color: #32423a; background: #edf1ed; }
+      button:disabled { opacity: .55; cursor: wait; }
+      .shell { display: grid; grid-template-columns: 248px minmax(0, 1fr); min-height: 100vh; }
+      aside { position: sticky; top: 0; display: flex; flex-direction: column; height: 100vh; padding: 25px 17px; color: #eaf5ee; background: #173c2c; }
+      .brand { display: flex; align-items: center; gap: 11px; margin: 0 0 28px; color: inherit; font-size: 15px; font-weight: 750; text-decoration: none; }
+      .brand-mark { display: grid; flex: 0 0 42px; width: 42px; height: 42px; place-items: center; border-radius: 14px; background: #b7e5c7; box-shadow: inset 0 0 0 1px #ffffff50; }
+      .brand-mark svg { width: 27px; height: 27px; }
+      .sidebar-links { display: grid; align-content: start; gap: 3px; flex: 1; }
+      .nav-label { margin: 22px 10px 8px; color: #a9c5b4; font-size: 11px; font-weight: 750; letter-spacing: .12em; text-transform: uppercase; }
+      .nav-link { display: block; padding: 10px; border-radius: 8px; color: #eaf5ee; text-decoration: none; font-size: 14px; }
+      .nav-link:hover { background: #28523e; }
+      .nav-link.external { margin-top: 20px; border: 1px solid #ffffff30; }
+      .mobile-menu { display: none; padding: 9px 12px; }
+      main { min-width: 0; padding: 28px clamp(18px, 4vw, 56px) 60px; }
+      .topbar, .section-head, .toolbar, .bridge-panel, .field-actions { display: flex; align-items: center; justify-content: space-between; gap: 14px; }
+      .topbar { margin-bottom: 20px; }
+      h1 { margin: 0; font-size: clamp(24px, 3vw, 32px); letter-spacing: -.04em; }
+      h2 { margin: 0; font-size: 18px; letter-spacing: -.02em; }
+      p { color: var(--muted); }
+      .subhead { margin: 7px 0 0; font-size: 14px; }
+      .connection { display: flex; align-items: center; gap: 8px; color: #41534a; font-size: 13px; font-weight: 650; }
+      .dot { width: 9px; height: 9px; border-radius: 50%; background: #a5b1aa; }
+      .dot.on { background: #299761; box-shadow: 0 0 0 4px #dff3e7; }
+      .dot.warn { background: #e0a52e; }
+      .grid { display: grid; gap: 15px; }
+      .stats { grid-template-columns: repeat(2, minmax(0, 1fr)); margin-bottom: 15px; }
+      .card { min-width: 0; border: 1px solid var(--line); border-radius: 15px; background: var(--surface); box-shadow: 0 2px 6px #263b2b08; }
+      .stat { padding: 18px 20px; }
+      .stat-label { color: var(--muted); font-size: 13px; }
+      .stat-value { display: block; margin-top: 7px; font-size: 27px; font-weight: 750; letter-spacing: -.04em; }
+      .section { margin-top: 15px; padding: 21px; }
+      .section-head { margin-bottom: 15px; }
+      .hint { margin: 5px 0 0; color: var(--muted); font-size: 13px; line-height: 1.5; }
+      .setup-summary { margin: 0 0 15px; color: #46564d; font-size: 14px; line-height: 1.5; }
+      .steps { display: grid; gap: 10px; margin: 0; padding: 0; list-style: none; }
+      .step { display: grid; grid-template-columns: 32px minmax(0, 1fr) auto; align-items: center; gap: 11px; border: 1px solid var(--line); border-radius: 11px; padding: 12px; }
+      .step-number { display: grid; width: 29px; height: 29px; place-items: center; border-radius: 50%; color: #536157; background: #eef2ee; font-size: 12px; font-weight: 750; }
+      .step.done .step-number { color: #176746; background: #e1f3e7; }
+      .step-title { display: block; font-size: 13px; font-weight: 700; }
+      .step-detail { display: block; margin-top: 3px; color: var(--muted); font-size: 12px; line-height: 1.4; }
+      .step-status { color: var(--muted); font-size: 11px; font-weight: 700; white-space: nowrap; }
+      label { display: grid; gap: 6px; color: #46564d; font-size: 12px; font-weight: 650; }
+      input, select { width: 100%; min-width: 0; border: 1px solid #dce4dc; border-radius: 8px; padding: 10px 11px; outline: none; color: #202b25; background: white; font-size: 13px; }
+      input:focus, select:focus { border-color: #69a982; box-shadow: 0 0 0 3px #def1e4; }
+      .field-note { color: var(--muted); font-size: 11px; font-weight: 400; line-height: 1.45; }
+      .settings-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+      .group-field { grid-column: span 2; }
+      .group-list { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+      .group-option { display: flex; min-width: 0; align-items: flex-start; gap: 9px; border: 1px solid var(--line); border-radius: 9px; padding: 10px; color: #32423a; background: #fbfcfb; font-weight: 500; }
+      .group-option input { width: 16px; height: 16px; flex: 0 0 16px; margin: 1px 0 0; accent-color: var(--green); }
+      .group-option span { min-width: 0; overflow-wrap: anywhere; }
+      .group-empty { grid-column: 1 / -1; margin: 0; border: 1px dashed #dce4dc; border-radius: 9px; padding: 12px; color: var(--muted); font-size: 12px; font-weight: 400; }
+      .group-count { color: var(--muted); font-size: 11px; font-weight: 500; }
+      .field-actions { justify-content: flex-start; }
+      .check-row { display: flex; align-items: flex-start; gap: 10px; grid-column: span 2; border-top: 1px solid var(--line); padding-top: 15px; }
+      .check-row input { width: 17px; height: 17px; margin: 1px 0 0; accent-color: var(--green); }
+      .check-copy { display: grid; gap: 3px; }
+      .table-wrap { overflow-x: auto; }
+      table { width: 100%; border-collapse: collapse; text-align: left; }
+      th { padding: 10px 12px; color: var(--muted); font-size: 11px; font-weight: 750; letter-spacing: .08em; text-transform: uppercase; }
+      td { padding: 13px 12px; border-top: 1px solid #edf0ec; vertical-align: middle; font-size: 13px; }
+      .badge { display: inline-flex; align-items: center; border-radius: 20px; padding: 5px 9px; background: #eef2ee; color: #536157; font-size: 11px; font-weight: 750; white-space: nowrap; }
+      .badge.green { background: #e1f3e7; color: #176746; }
+      .badge.amber { background: #fff0d3; color: var(--amber); }
+      .empty { padding: 25px 12px; text-align: center; color: var(--muted); font-size: 13px; }
+      .qr { display: block; width: 170px; height: 170px; border: 8px solid white; border-radius: 12px; box-shadow: 0 1px 8px #0002; }
+      .notice { position: fixed; right: 20px; bottom: 20px; z-index: 3; max-width: min(440px, calc(100vw - 40px)); border-radius: 10px; padding: 13px 17px; color: white; background: #203d2d; box-shadow: 0 8px 30px #15251a33; }
+      .notice.error { background: #9c3935; }
+      .hidden { display: none !important; }
+      @media (max-width: 900px) {
+        .shell { grid-template-columns: minmax(0, 1fr); }
+        aside { z-index: 5; display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 0 12px; height: auto; padding: 10px clamp(14px, 4vw, 24px); box-shadow: 0 4px 18px #102e1f1a; }
+        .brand { min-height: 44px; margin: 0; }
+        .brand-mark { flex-basis: 38px; width: 38px; height: 38px; border-radius: 12px; }
+        .brand-mark svg { width: 24px; height: 24px; }
+        .mobile-menu { display: inline-flex; }
+        .sidebar-links { display: none; grid-column: 1 / -1; padding: 9px 0 4px; }
+        aside.menu-open .sidebar-links { display: grid; }
+        .nav-label { margin-top: 12px; }
+        .nav-link.external { margin-top: 8px; }
+        main { padding-top: 22px; }
+        .toolbar { flex-wrap: wrap; justify-content: flex-start; }
+      }
+      @media (max-width: 620px) {
+        .topbar, .bridge-panel { align-items: flex-start; flex-direction: column; }
+        .section-head { align-items: flex-start; flex-direction: column; }
+        .toolbar { width: 100%; }
+        .settings-grid, .stats { grid-template-columns: 1fr; }
+        .group-field { grid-column: auto; }
+        .group-list { grid-template-columns: 1fr; }
+        .check-row { grid-column: auto; }
+        .section { padding: 16px; }
+        .step { grid-template-columns: 30px minmax(0, 1fr); }
+        .step-status { grid-column: 2; }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="shell">
+      <aside id="sidebar">
+        <a class="brand" href="/api/admin" aria-label="WhatsApp Commerce dashboard">
+          <span class="brand-mark" aria-hidden="true">
+            <svg viewBox="0 0 32 32" fill="none">
+              <path d="M8 12h16l-1.6 14H9.6L8 12Z" fill="#176746"/>
+              <path d="M12 12V9a4 4 0 0 1 8 0v3" stroke="#104c34" stroke-width="2.2" stroke-linecap="round"/>
+              <path d="M12 18.5h8M12 22h5" stroke="#dff3e7" stroke-width="1.8" stroke-linecap="round"/>
+            </svg>
+          </span>
+          <span>WhatsApp Commerce</span>
+        </a>
+        <button id="menuToggle" class="mobile-menu" type="button" aria-expanded="false" aria-controls="sidebarLinks">Menu</button>
+        <nav id="sidebarLinks" class="sidebar-links" aria-label="Dashboard navigation">
+          <div class="nav-label">Your shop</div>
+          <a class="nav-link" href="#setup">Getting started</a>
+          <a class="nav-link" href="#products">Recent products</a>
+          <a class="nav-link" href="#settings">Business settings</a>
+          <a class="nav-link" href="#connection">WhatsApp connection</a>
+          <a class="nav-link external" href="/api/admin/sandbox">Test a caption</a>
+        </nav>
+      </aside>
+      <main>
+        <header class="topbar">
+          <div>
+            <h1>Your shop dashboard</h1>
+            <p class="subhead">Set up wholesale-to-retail posting and keep track of recent products.</p>
+          </div>
+          <div class="toolbar">
+            <div class="connection"><span id="connectionDot" class="dot"></span><span id="connectionText">Checking connection</span></div>
+            <a class="button-link" href="/api/admin/sandbox">Test a caption</a>
+            <button id="refreshButton" class="secondary" type="button">Refresh</button>
+          </div>
+        </header>
+
+        <section id="setup" class="card section">
+          <div class="section-head">
+            <div><h2>Getting started</h2><p class="hint">Complete these steps to begin automatic posting.</p></div>
+          </div>
+          <p id="setupSummary" class="setup-summary">Checking your setup…</p>
+          <ol class="steps">
+            <li class="step" id="stepConnection">
+              <span class="step-number">1</span>
+              <span><span class="step-title">Connect WhatsApp</span><span class="step-detail">Link the WhatsApp account that belongs to the shop.</span></span>
+              <span class="step-status" id="stepConnectionStatus">Checking</span>
+            </li>
+            <li class="step" id="stepGroups">
+              <span class="step-number">2</span>
+              <span><span class="step-title">Choose your groups</span><span class="step-detail">Select the wholesale source and retail destination below.</span></span>
+              <span class="step-status" id="stepGroupsStatus">Checking</span>
+            </li>
+            <li class="step" id="stepAutomation">
+              <span class="step-number">3</span>
+              <span><span class="step-title">Review your markup and enable posting</span><span class="step-detail">The markup is added to eligible single-unit wholesale prices.</span></span>
+              <span class="step-status" id="stepAutomationStatus">Checking</span>
+            </li>
+          </ol>
+        </section>
+
+        <section class="grid stats" aria-label="Posting totals">
+          <article class="card stat"><span class="stat-label">Wholesale products received</span><strong id="statProducts" class="stat-value">—</strong></article>
+          <article class="card stat"><span class="stat-label">Posted to retail</span><strong id="statRetailPosts" class="stat-value">—</strong></article>
+        </section>
+
+        <section id="settings" class="card section">
+          <div class="section-head">
+            <div><h2>Business settings</h2><p class="hint">Choose your groups and set the markup added to eligible wholesale prices.</p></div>
+            <button id="saveSettings" type="submit" form="settingsForm">Save changes</button>
+          </div>
+          <form id="settingsForm" class="settings-grid">
+            <div class="group-field">
+              <div class="section-head">
+                <h3 id="wholesaleGroupsHeading">Wholesale groups</h3>
+                <button id="loadGroups" class="secondary" type="button">Load WhatsApp groups</button>
+              </div>
+              <div id="wholesaleGroupsList" class="group-list" role="group" aria-labelledby="wholesaleGroupsHeading">
+                <p class="group-empty">Load WhatsApp groups, then select every wholesale source to monitor.</p>
+              </div>
+              <span class="field-note">New product posts from any selected group will be checked for an eligible single-unit price.</span>
+              <span id="wholesaleGroupsCount" class="group-count">0 groups selected</span>
+            </div>
+            <label>Retail group
+              <select name="retail_group_jid"><option value="">Select a group</option></select>
+              <span class="field-note">Eligible products from all selected wholesale groups are posted here.</span>
+            </label>
+            <label>Standard markup (₦)
+              <input name="markup_rule" type="number" min="0" step="0.01" required>
+              <span class="field-note">Added to the wholesale price when creating a retail listing.</span>
+            </label>
+            <label class="check-row">
+              <input name="automation_enabled" type="checkbox">
+              <span class="check-copy"><span>Enable automatic posting</span><span class="field-note">When enabled, eligible wholesale posts are queued and reposted to your retail group.</span></span>
+            </label>
+          </form>
+        </section>
+
+        <section id="products" class="card section">
+          <div class="section-head">
+            <div><h2>Recent products</h2><p class="hint">Latest wholesale products and their retail posting status.</p></div>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>Product</th><th>Retail price</th><th>Received</th><th>Retail post</th></tr></thead>
+              <tbody id="productsBody"></tbody>
+            </table>
+          </div>
+        </section>
+
+        <section id="connection" class="card section">
+          <div class="section-head">
+            <div><h2>WhatsApp connection</h2><p class="hint">Scan with the WhatsApp account that runs the shop.</p></div>
+          </div>
+          <div class="bridge-panel">
+            <div><strong id="bridgeStatus">Checking bridge…</strong><p id="bridgeHint" class="hint">The bridge must be running to connect.</p></div>
+            <img id="qrCode" class="qr hidden" alt="WhatsApp pairing QR code">
+          </div>
+        </section>
+      </main>
+    </div>
+    <div id="notice" class="notice hidden" role="status"></div>
+    <script>
+      const $ = (selector) => document.querySelector(selector);
+      let dashboardData = null;
+      let settingsDirty = false;
+      let whatsappGroups = [];
+      let noticeTimer;
+
+      function element(tag, className, text) {
+        const node = document.createElement(tag);
+        if (className) node.className = className;
+        if (text !== undefined && text !== null) node.textContent = String(text);
+        return node;
+      }
+
+      function showNotice(message, error = false) {
+        const notice = $("#notice");
+        notice.textContent = message;
+        notice.className = error ? "notice error" : "notice";
+        clearTimeout(noticeTimer);
+        noticeTimer = setTimeout(() => notice.classList.add("hidden"), 4000);
+      }
+
+      async function request(path, options = {}) {
+        const headers = { "X-Dashboard-Request": "1", ...(options.headers || {}) };
+        if (options.body) headers["Content-Type"] = "application/json";
+        const response = await fetch(path, { ...options, headers });
+        if (!response.ok) {
+          let message = `Request failed (${response.status})`;
+          try { message = (await response.json()).detail || message; } catch {}
+          throw new Error(message);
+        }
+        return response.status === 204 ? null : response.json();
+      }
+
+      function renderGroupSelect(select, selectedValue) {
+        select.replaceChildren(element("option", "", "Select a group"));
+        select.options[0].value = "";
+        const selected = selectedValue || "";
+        if (selected && !whatsappGroups.some(group => group.jid === selected)) {
+          const saved = element("option", "", `Saved group (${selected})`);
+          saved.value = selected;
+          select.append(saved);
+        }
+        for (const group of whatsappGroups) {
+          const option = element("option", "", `${group.subject} (${group.jid})`);
+          option.value = group.jid;
+          select.append(option);
+        }
+        select.value = selected;
+      }
+
+      function selectedWholesaleGroups() {
+        return [...document.querySelectorAll('input[name="wholesale_group_jids"]:checked')]
+          .map(input => input.value);
+      }
+
+      function updateWholesaleGroupCount() {
+        const count = selectedWholesaleGroups().length;
+        $("#wholesaleGroupsCount").textContent = `${count} ${count === 1 ? "group" : "groups"} selected`;
+      }
+
+      function renderWholesaleGroups(selectedValues = []) {
+        const container = $("#wholesaleGroupsList");
+        const selected = new Set(selectedValues);
+        const retailGroupJid = $("#settingsForm").elements.retail_group_jid.value;
+        const groups = [...whatsappGroups];
+        const knownJids = new Set(groups.map(group => group.jid));
+        for (const jid of selected) {
+          if (!knownJids.has(jid)) groups.push({ jid, subject: `Saved group (${jid})` });
+        }
+        container.replaceChildren();
+        if (!groups.length) {
+          const empty = element(
+            "p",
+            "group-empty",
+            "Connect WhatsApp and load groups, then select the wholesale sources to monitor."
+          );
+          container.append(empty);
+        }
+        for (const group of groups) {
+          const label = element("label", "group-option");
+          const checkbox = element("input");
+          checkbox.type = "checkbox";
+          checkbox.name = "wholesale_group_jids";
+          checkbox.value = group.jid;
+          checkbox.checked = selected.has(group.jid);
+          checkbox.disabled = group.jid === retailGroupJid && !checkbox.checked;
+          checkbox.addEventListener("change", () => {
+            settingsDirty = true;
+            updateWholesaleGroupCount();
+          });
+          const suffix = group.jid === retailGroupJid ? " · Retail destination" : "";
+          label.append(checkbox, element("span", "", `${group.subject} · ${group.jid}${suffix}`));
+          container.append(label);
+        }
+        updateWholesaleGroupCount();
+      }
+
+      function renderSettings(settings) {
+        const form = $("#settingsForm");
+        const wholesaleGroups = settings.wholesale_group_jids?.length
+          ? settings.wholesale_group_jids
+          : settings.wholesale_group_jid
+            ? [settings.wholesale_group_jid]
+            : [];
+        renderWholesaleGroups(wholesaleGroups);
+        renderGroupSelect(form.elements.retail_group_jid, settings.retail_group_jid);
+        form.elements.markup_rule.value = settings.markup_rule;
+        form.elements.automation_enabled.checked = settings.automation_enabled;
+      }
+
+      function renderSetup() {
+        if (!dashboardData) return;
+        const { bridge, settings } = dashboardData;
+        const wholesaleGroups = settings.wholesale_group_jids?.length
+          ? settings.wholesale_group_jids
+          : settings.wholesale_group_jid
+            ? [settings.wholesale_group_jid]
+            : [];
+        const groupsReady = Boolean(
+          wholesaleGroups.length && settings.retail_group_jid
+        );
+        const steps = [
+          ["stepConnection", "stepConnectionStatus", bridge.connected, bridge.connected ? "Connected" : "Connect WhatsApp"],
+          ["stepGroups", "stepGroupsStatus", groupsReady, groupsReady ? "Groups selected" : "Choose groups"],
+          ["stepAutomation", "stepAutomationStatus", settings.automation_enabled, settings.automation_enabled ? "Posting enabled" : "Turn on posting"]
+        ];
+        for (const [stepId, statusId, done, statusText] of steps) {
+          $( `#${stepId}`).classList.toggle("done", done);
+          $(`#${statusId}`).textContent = statusText;
+        }
+        $("#setupSummary").textContent = bridge.connected && groupsReady && settings.automation_enabled
+          ? "Your shop is ready. Eligible wholesale products will be formatted and posted automatically."
+          : "Connect WhatsApp, select your groups, review the markup, and enable automatic posting.";
+      }
+
+      function formatDate(value) {
+        return value ? new Date(value).toLocaleString() : "—";
+      }
+
+      function renderProducts(products) {
+        const body = $("#productsBody");
+        body.replaceChildren();
+        if (!products.length) {
+          const row = element("tr");
+          const empty = element("td", "empty", "New wholesale products will appear here after they are received.");
+          empty.colSpan = 4;
+          row.append(empty);
+          body.append(row);
+          return;
+        }
+        for (const product of products) {
+          const row = element("tr");
+          const name = element("td");
+          name.textContent = product.product_name || product.category || "Product";
+          row.append(name);
+          const price = element("td", "", `₦${product.listed_price}`);
+          row.append(price);
+          const received = element("td", "", formatDate(product.created_at));
+          row.append(received);
+          const status = element("td");
+          status.append(element(
+            "span",
+            `badge ${product.retail_msg_id ? "green" : "amber"}`,
+            product.retail_msg_id ? "Posted" : "Queued"
+          ));
+          row.append(status);
+          body.append(row);
+        }
+      }
+
+      function renderBridgeStatus(bridge) {
+        if (dashboardData) dashboardData.bridge = bridge;
+        const state = bridge.connection_state;
+        const label = bridge.connected
+          ? "WhatsApp connected"
+          : !bridge.reachable
+            ? "Bridge offline"
+            : state === "reconnecting"
+              ? "Reconnecting WhatsApp"
+              : state === "logged_out"
+                ? "WhatsApp logged out"
+                : bridge.qr_data_url
+                  ? "Waiting for WhatsApp scan"
+                  : "Starting WhatsApp";
+        $("#connectionDot").className = `dot ${bridge.connected ? "on" : bridge.reachable ? "warn" : ""}`;
+        $("#connectionText").textContent = label;
+        $("#bridgeStatus").textContent = bridge.connected
+          ? `WhatsApp connected${bridge.account_jid ? ` as ${bridge.account_jid}` : ""}.`
+          : !bridge.reachable
+            ? "The WhatsApp bridge is not reachable."
+            : state === "reconnecting"
+              ? "Connection interrupted. Reconnecting automatically…"
+              : state === "logged_out"
+                ? "WhatsApp logged out. Pair the device again."
+                : bridge.qr_data_url
+                  ? "Scan to connect your WhatsApp account."
+                  : "Starting the WhatsApp connection…";
+        $("#bridgeHint").textContent = bridge.connected
+          ? "Your account is linked and ready for configured posting."
+          : !bridge.reachable
+            ? "Start the bridge service and check its API secret."
+            : state === "logged_out"
+              ? "Resolve the saved WhatsApp session, then restart the bridge."
+              : "In WhatsApp, open Linked devices and choose Link a device.";
+        const qr = $("#qrCode");
+        if (!bridge.connected && bridge.qr_data_url) {
+          qr.src = bridge.qr_data_url;
+          qr.classList.remove("hidden");
+        } else {
+          qr.removeAttribute("src");
+          qr.classList.add("hidden");
+        }
+        renderSetup();
+      }
+
+      function render(data) {
+        dashboardData = data;
+        $("#statProducts").textContent = data.stats.products;
+        $("#statRetailPosts").textContent = data.stats.retail_posts;
+        if (!settingsDirty) renderSettings(data.settings);
+        renderProducts(data.products);
+        renderBridgeStatus(data.bridge);
+      }
+
+      async function refresh() {
+        $("#refreshButton").disabled = true;
+        try {
+          render(await request("/api/admin/overview"));
+        } catch (error) {
+          showNotice(error.message, true);
+        } finally {
+          $("#refreshButton").disabled = false;
+        }
+      }
+
+      async function refreshBridgeStatus() {
+        try {
+          renderBridgeStatus(await request("/api/admin/bridge-status"));
+        } catch {
+          renderBridgeStatus({
+            reachable: false,
+            connected: false,
+            account_jid: null,
+            qr_data_url: null
+          });
+        }
+      }
+
+      $("#refreshButton").addEventListener("click", refresh);
+      $("#menuToggle").addEventListener("click", () => {
+        const sidebar = $("#sidebar");
+        const expanded = $("#menuToggle").getAttribute("aria-expanded") === "true";
+        sidebar.classList.toggle("menu-open", !expanded);
+        $("#menuToggle").setAttribute("aria-expanded", String(!expanded));
+        $("#menuToggle").textContent = expanded ? "Menu" : "Close";
+      });
+      $("#sidebarLinks").querySelectorAll('a[href^="#"]').forEach(link => {
+        link.addEventListener("click", () => {
+          $("#sidebar").classList.remove("menu-open");
+          $("#menuToggle").setAttribute("aria-expanded", "false");
+          $("#menuToggle").textContent = "Menu";
+        });
+      });
+      $("#loadGroups").addEventListener("click", async () => {
+        const button = $("#loadGroups");
+        button.disabled = true;
+        try {
+          const result = await request("/api/admin/groups");
+          whatsappGroups = result.groups;
+          const form = $("#settingsForm");
+          renderWholesaleGroups(selectedWholesaleGroups());
+          renderGroupSelect(form.elements.retail_group_jid, form.elements.retail_group_jid.value);
+          showNotice(whatsappGroups.length
+            ? `Loaded ${whatsappGroups.length} WhatsApp groups.`
+            : "No groups found. Make sure the linked account has joined them.");
+        } catch (error) {
+          showNotice(error.message, true);
+        } finally {
+          button.disabled = false;
+        }
+      });
+
+      $("#settingsForm").elements.retail_group_jid.addEventListener("change", () => {
+        settingsDirty = true;
+        renderWholesaleGroups(selectedWholesaleGroups());
+      });
+
+      $("#settingsForm").addEventListener("submit", async (event) => {
+        event.preventDefault();
+        const form = event.currentTarget;
+        const payload = {
+          wholesale_group_jids: selectedWholesaleGroups(),
+          retail_group_jid: form.elements.retail_group_jid.value || null,
+          markup_rule: form.elements.markup_rule.value,
+          automation_enabled: form.elements.automation_enabled.checked
+        };
+        $("#saveSettings").disabled = true;
+        try {
+          await request("/api/admin/settings", {
+            method: "PUT",
+            body: JSON.stringify(payload)
+          });
+          settingsDirty = false;
+          showNotice("Business settings saved.");
+          await refresh();
+        } catch (error) {
+          showNotice(error.message, true);
+        } finally {
+          $("#saveSettings").disabled = false;
+        }
+      });
+
+      $("#settingsForm").addEventListener("input", () => { settingsDirty = true; });
+      $("#settingsForm").addEventListener("change", () => { settingsDirty = true; });
+      void refresh();
+      setInterval(() => { void refresh(); }, 30_000);
+      setInterval(() => { void refreshBridgeStatus(); }, 5_000);
+    </script>
+  </body>
+</html>

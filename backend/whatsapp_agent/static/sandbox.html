@@ -1,0 +1,262 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="color-scheme" content="light">
+    <title>WhatsApp Commerce · Posting sandbox</title>
+    <style>
+      :root {
+        font-family: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+        color: #202b25;
+        background: #f4f6f2;
+        font-synthesis: none;
+        text-rendering: optimizeLegibility;
+        --green: #176746;
+        --green-dark: #104c34;
+        --muted: #718078;
+        --line: #e5eae4;
+        --surface: #fff;
+      }
+      * { box-sizing: border-box; }
+      body { margin: 0; }
+      button, input, textarea { font: inherit; }
+      button, .button-link {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border: 0;
+        border-radius: 9px;
+        padding: 10px 14px;
+        color: white;
+        background: var(--green);
+        font-weight: 650;
+        text-decoration: none;
+        cursor: pointer;
+      }
+      button:hover, .button-link:hover { background: var(--green-dark); }
+      button.secondary { color: #32423a; background: #edf1ed; }
+      button:disabled { opacity: .55; cursor: wait; }
+      main { width: min(880px, calc(100% - 32px)); margin: 30px auto 60px; }
+      .topbar, .section-head { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+      .topbar { margin-bottom: 22px; }
+      h1 { margin: 0; font-size: clamp(24px, 4vw, 32px); letter-spacing: -.04em; }
+      h2 { margin: 0; font-size: 18px; }
+      h3 { margin: 0; font-size: 14px; }
+      .brand { display: flex; align-items: center; gap: 9px; margin-bottom: 12px; color: var(--green); font-size: 13px; font-weight: 750; text-decoration: none; }
+      .brand-mark { display: grid; width: 34px; height: 34px; place-items: center; border-radius: 11px; background: #b7e5c7; }
+      .brand-mark svg { width: 23px; height: 23px; }
+      .subhead, .hint { color: var(--muted); line-height: 1.5; }
+      .subhead { margin: 7px 0 0; font-size: 14px; }
+      .hint { margin: 5px 0 0; font-size: 13px; }
+      .card { border: 1px solid var(--line); border-radius: 15px; padding: 22px; background: var(--surface); box-shadow: 0 2px 6px #263b2b08; }
+      .section-head { margin-bottom: 17px; }
+      .form-grid { display: grid; gap: 15px; }
+      .image-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+      label { display: grid; gap: 6px; color: #46564d; font-size: 12px; font-weight: 650; }
+      input, textarea { width: 100%; border: 1px solid #dce4dc; border-radius: 8px; padding: 10px 11px; outline: none; color: #202b25; background: white; font-size: 13px; }
+      textarea { min-height: 100px; resize: vertical; }
+      input:focus, textarea:focus { border-color: #69a982; box-shadow: 0 0 0 3px #def1e4; }
+      .field-note { color: var(--muted); font-size: 11px; font-weight: 400; line-height: 1.45; }
+      .preview { display: grid; gap: 12px; margin-top: 20px; border: 1px solid #dfe9df; border-radius: 10px; padding: 15px; background: #f8faf7; }
+      .details { display: grid; gap: 5px; color: #46564d; font-size: 13px; }
+      .actions { display: flex; gap: 9px; }
+      .notice { position: fixed; right: 20px; bottom: 20px; z-index: 3; max-width: min(440px, calc(100vw - 40px)); border-radius: 10px; padding: 13px 17px; color: white; background: #203d2d; box-shadow: 0 8px 30px #15251a33; }
+      .notice.error { background: #9c3935; }
+      .hidden { display: none !important; }
+      @media (max-width: 620px) {
+        .topbar, .section-head { align-items: flex-start; flex-direction: column; }
+        .image-grid { grid-template-columns: 1fr; }
+        .card { padding: 16px; }
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <header class="topbar">
+        <div>
+          <a class="brand" href="/api/admin">
+            <span class="brand-mark" aria-hidden="true">
+              <svg viewBox="0 0 32 32" fill="none">
+                <path d="M8 12h16l-1.6 14H9.6L8 12Z" fill="#176746"/>
+                <path d="M12 12V9a4 4 0 0 1 8 0v3" stroke="#104c34" stroke-width="2.2" stroke-linecap="round"/>
+                <path d="M12 18.5h8M12 22h5" stroke="#dff3e7" stroke-width="1.8" stroke-linecap="round"/>
+              </svg>
+            </span>
+            WhatsApp Commerce
+          </a>
+          <h1>Posting sandbox</h1>
+          <p class="subhead">Test caption extraction and the retail post format without sending WhatsApp messages or saving products.</p>
+        </div>
+        <a class="button-link" href="/api/admin">Back to dashboard</a>
+      </header>
+      <section class="card">
+        <div class="section-head">
+          <div>
+            <h2>Preview a wholesale post</h2>
+            <p class="hint">A post with only MOQ or carton pricing will be skipped. For an unpriced color variant, upload the earlier priced image and the new image.</p>
+          </div>
+        </div>
+        <div class="form-grid">
+          <label>Wholesale caption
+            <textarea id="wholesaleCaption" maxlength="4000" placeholder="Example: New tote bags, black and cream, sizes M/L, ₦10,000"></textarea>
+          </label>
+          <label>Previous priced caption <span class="field-note">Required only to confirm that this is a variant follow-up in the sandbox simulation. Its text and price are not sent to image comparison or reused.</span>
+            <textarea id="previousPricedCaption" maxlength="4000" placeholder="Paste the earlier priced post caption"></textarea>
+          </label>
+          <div class="image-grid">
+            <label>Previous product image
+              <input id="previousProductImage" type="file" accept="image/jpeg,image/png,image/webp">
+              <span class="field-note">The earlier priced product photo. Maximum 14 MB.</span>
+            </label>
+            <label>New product image
+              <input id="newProductImage" type="file" accept="image/jpeg,image/png,image/webp">
+              <span class="field-note">The new photo. The sandbox simulates the same sender and a post within 10 minutes.</span>
+            </label>
+          </div>
+          <div class="actions">
+            <button id="previewWholesale" type="button">Preview retail post</button>
+          </div>
+        </div>
+        <div id="wholesalePreview" class="preview hidden" aria-live="polite">
+          <div>
+            <h3>Extraction result</h3>
+            <div id="wholesaleDetails" class="details"></div>
+          </div>
+          <label>Retail caption preview
+            <textarea id="retailCaptionPreview" readonly></textarea>
+          </label>
+          <div><button id="copyRetailCaption" class="secondary" type="button" disabled>Copy caption</button></div>
+        </div>
+      </section>
+    </main>
+    <div id="notice" class="notice hidden" role="status"></div>
+    <script>
+      const $ = (selector) => document.querySelector(selector);
+      let noticeTimer;
+
+      function element(tag, text) {
+        const node = document.createElement(tag);
+        if (text !== undefined && text !== null) node.textContent = String(text);
+        return node;
+      }
+
+      function showNotice(message, error = false) {
+        const notice = $("#notice");
+        notice.textContent = message;
+        notice.className = error ? "notice error" : "notice";
+        clearTimeout(noticeTimer);
+        noticeTimer = setTimeout(() => notice.classList.add("hidden"), 4000);
+      }
+
+      async function request(path, options = {}) {
+        const headers = { "X-Dashboard-Request": "1", ...(options.headers || {}) };
+        if (options.body) headers["Content-Type"] = "application/json";
+        const response = await fetch(path, { ...options, headers });
+        if (!response.ok) {
+          let message = `Request failed (${response.status})`;
+          try { message = (await response.json()).detail || message; } catch {}
+          throw new Error(message);
+        }
+        return response.status === 204 ? null : response.json();
+      }
+
+      async function readImage(inputId) {
+        const file = $(inputId).files[0];
+        if (!file) return null;
+        if (file.size > 14 * 1024 * 1024) {
+          throw new Error("Each test image must be smaller than 14 MB.");
+        }
+        const dataUrl = await new Promise((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onload = () => resolve(reader.result);
+          reader.onerror = () => reject(new Error("Could not read image."));
+          reader.readAsDataURL(file);
+        });
+        return {
+          base64: String(dataUrl).split(",", 2)[1],
+          mimeType: file.type || "image/jpeg"
+        };
+      }
+
+      $("#previewWholesale").addEventListener("click", async () => {
+        const button = $("#previewWholesale");
+        const caption = $("#wholesaleCaption").value.trim();
+        if (!caption) {
+          showNotice("Paste a wholesale caption first.", true);
+          return;
+        }
+        button.disabled = true;
+        $("#wholesalePreview").classList.add("hidden");
+        try {
+          const previousCaption = $("#previousPricedCaption").value.trim();
+          const [previousImage, newImage] = await Promise.all([
+            readImage("#previousProductImage"),
+            readImage("#newProductImage")
+          ]);
+          const result = await request("/api/admin/sandbox/wholesale-retail", {
+            method: "POST",
+            body: JSON.stringify({
+              caption,
+              previous_priced_caption: previousCaption || null,
+              previous_image_base64: previousImage?.base64 || null,
+              previous_image_mime_type: previousImage?.mimeType || "image/jpeg",
+              image_base64: newImage?.base64 || null,
+              image_mime_type: newImage?.mimeType || "image/jpeg"
+            })
+          });
+          const details = $("#wholesaleDetails");
+          details.replaceChildren();
+          const captionPreview = $("#retailCaptionPreview");
+          const copyButton = $("#copyRetailCaption");
+          if (!result.accepted) {
+            details.append(element("p", result.reason));
+            captionPreview.value = "";
+            copyButton.disabled = true;
+          } else {
+            if (result.variant_followup) {
+              details.append(element("p", "Variant follow-up: original caption only; no price added."));
+            } else {
+              const values = [
+                `Category: ${result.category}`,
+                `Product: ${result.product_name || "—"}`,
+                `Wholesale price: ₦${result.wholesale_price}`,
+                `Listed price: ₦${result.listed_price}`,
+                `Internal floor (admin only): ₦${result.floor_price}`
+              ];
+              if (Object.keys(result.color_sizes || {}).length) {
+                values.push(
+                  `Sizes by colour: ${Object.entries(result.color_sizes)
+                    .map(([color, sizes]) => `${color}: ${sizes.join(", ")}`)
+                    .join("; ")}`
+                );
+              } else {
+                values.push(
+                  `Sizes: ${result.sizes.length ? result.sizes.join(", ") : "—"}`,
+                  `Colours: ${result.colors.length ? result.colors.join(", ") : "—"}`
+                );
+              }
+              for (const value of values) details.append(element("div", value));
+            }
+            captionPreview.value = result.retail_caption;
+            copyButton.disabled = false;
+          }
+          $("#wholesalePreview").classList.remove("hidden");
+        } catch (error) {
+          showNotice(error.message, true);
+        } finally {
+          button.disabled = false;
+        }
+      });
+
+      $("#copyRetailCaption").addEventListener("click", async () => {
+        try {
+          await navigator.clipboard.writeText($("#retailCaptionPreview").value);
+          showNotice("Retail caption copied.");
+        } catch {
+          showNotice("Could not copy the caption. Select and copy it manually.", true);
+        }
+      });
+    </script>
+  </body>
+</html>

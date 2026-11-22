@@ -9,7 +9,20 @@ from sqlalchemy.ext.asyncio import (
 from whatsapp_agent.config import get_settings
 
 
-engine = create_async_engine(str(get_settings().database_url), pool_pre_ping=True)
+def async_database_url(database_url: str) -> str:
+    if database_url.startswith("postgres://"):
+        return database_url.replace("postgres://", "postgresql+asyncpg://", 1)
+    if database_url.startswith("postgresql://"):
+        return database_url.replace("postgresql://", "postgresql+asyncpg://", 1)
+    return database_url
+
+
+database_url = async_database_url(str(get_settings().database_url))
+engine_options: dict[str, object] = {"pool_pre_ping": True}
+if database_url.startswith("postgresql+asyncpg://"):
+    engine_options.update(pool_size=1, max_overflow=0, pool_recycle=300)
+
+engine = create_async_engine(database_url, **engine_options)
 AsyncSessionFactory = async_sessionmaker(
     bind=engine,
     class_=AsyncSession,
