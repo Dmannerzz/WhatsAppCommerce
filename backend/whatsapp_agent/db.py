@@ -1,5 +1,6 @@
 from collections.abc import AsyncIterator
 
+from sqlalchemy.engine import make_url
 from sqlalchemy.ext.asyncio import (
     AsyncSession,
     async_sessionmaker,
@@ -11,9 +12,21 @@ from whatsapp_agent.config import get_settings
 
 def async_database_url(database_url: str) -> str:
     if database_url.startswith("postgres://"):
-        return database_url.replace("postgres://", "postgresql+asyncpg://", 1)
-    if database_url.startswith("postgresql://"):
-        return database_url.replace("postgresql://", "postgresql+asyncpg://", 1)
+        database_url = database_url.replace(
+            "postgres://", "postgresql+asyncpg://", 1
+        )
+    elif database_url.startswith("postgresql://"):
+        database_url = database_url.replace(
+            "postgresql://", "postgresql+asyncpg://", 1
+        )
+    if database_url.startswith("postgresql+asyncpg://"):
+        url = make_url(database_url)
+        query = {
+            key: value
+            for key, value in url.query.items()
+            if key != "channel_binding"
+        }
+        return url.set(query=query).render_as_string(hide_password=False)
     return database_url
 
 

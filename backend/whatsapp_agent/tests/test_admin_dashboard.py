@@ -47,6 +47,10 @@ def test_render_postgres_urls_use_asyncpg_driver():
     assert async_database_url(
         "postgresql+asyncpg://user:password@host/database"
     ) == "postgresql+asyncpg://user:password@host/database"
+    assert async_database_url(
+        "postgresql://user:password@host/database"
+        "?ssl=require&channel_binding=require"
+    ) == "postgresql+asyncpg://user:password@host/database?ssl=require"
 
 
 def test_wholesale_payload_accepts_remote_vercel_blob_image():
