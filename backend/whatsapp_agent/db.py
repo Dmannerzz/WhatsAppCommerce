@@ -1,5 +1,6 @@
 from collections.abc import AsyncIterator
 
+from sqlalchemy import event
 from sqlalchemy.engine import make_url
 from sqlalchemy.ext.asyncio import (
     AsyncSession,
@@ -30,12 +31,28 @@ def async_database_url(database_url: str) -> str:
     return database_url
 
 
+def _remove_asyncpg_channel_binding(
+    _dialect: object,
+    _connection_record: object,
+    _cargs: tuple[object, ...],
+    cparams: dict[str, object],
+) -> None:
+    cparams.pop("channel_binding", None)
+
+
 database_url = async_database_url(str(get_settings().database_url))
 engine_options: dict[str, object] = {"pool_pre_ping": True}
 if database_url.startswith("postgresql+asyncpg://"):
     engine_options.update(pool_size=1, max_overflow=0, pool_recycle=300)
 
 engine = create_async_engine(database_url, **engine_options)
+if database_url.startswith("postgresql+asyncpg://"):
+    event.listen(
+        engine.sync_engine,
+        "do_connect",
+        _remove_asyncpg_channel_binding,
+    )
+
 AsyncSessionFactory = async_sessionmaker(
     bind=engine,
     class_=AsyncSession,

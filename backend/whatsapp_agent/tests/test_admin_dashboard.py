@@ -12,7 +12,11 @@ from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine
 
 from whatsapp_agent.app import app
 from whatsapp_agent.config import get_settings
-from whatsapp_agent.db import async_database_url, get_session
+from whatsapp_agent.db import (
+    _remove_asyncpg_channel_binding,
+    async_database_url,
+    get_session,
+)
 from whatsapp_agent.models import (
     Base,
     BridgeCommand,
@@ -51,6 +55,14 @@ def test_render_postgres_urls_use_asyncpg_driver():
         "postgresql://user:password@host/database"
         "?ssl=require&channel_binding=require"
     ) == "postgresql+asyncpg://user:password@host/database?ssl=require"
+
+
+def test_asyncpg_connect_options_drop_channel_binding():
+    connect_options = {"ssl": "require", "channel_binding": "require"}
+
+    _remove_asyncpg_channel_binding(None, None, (), connect_options)
+
+    assert connect_options == {"ssl": "require"}
 
 
 def test_wholesale_payload_accepts_remote_vercel_blob_image():
