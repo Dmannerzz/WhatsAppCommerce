@@ -20,30 +20,37 @@ from whatsapp_agent.routes.webhooks import router
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    async with engine.begin() as connection:
-        await connection.run_sync(Base.metadata.create_all)
-        settings_columns = await connection.run_sync(
-            lambda sync_connection: {
-                column["name"]
-                for column in inspect(sync_connection).get_columns(
-                    "business_settings"
-                )
-            }
-        )
-        if "wholesale_group_jids" not in settings_columns:
-            column_type = (
-                "JSONB" if connection.dialect.name == "postgresql" else "JSON"
+    import logging
+
+    logger = logging.getLogger(__name__)
+    try:
+        async with engine.begin() as connection:
+            await connection.run_sync(Base.metadata.create_all)
+            settings_columns = await connection.run_sync(
+                lambda sync_connection: {
+                    column["name"]
+                    for column in inspect(sync_connection).get_columns(
+                        "business_settings"
+                    )
+                }
             )
-            await connection.execute(
-                text(
-                    "ALTER TABLE business_settings "
-                    f"ADD COLUMN wholesale_group_jids {column_type} "
-                    "NOT NULL DEFAULT '[]'"
+            if "wholesale_group_jids" not in settings_columns:
+                column_type = (
+                    "JSONB" if connection.dialect.name == "postgresql" else "JSON"
                 )
-            )
-    async with AsyncSessionFactory() as session:
-        await get_business_settings(session)
-        await session.commit()
+                await connection.execute(
+                    text(
+                        "ALTER TABLE business_settings "
+                        f"ADD COLUMN wholesale_group_jids {column_type} "
+                        "NOT NULL DEFAULT '[]'"
+                    )
+                )
+        async with AsyncSessionFactory() as session:
+            await get_business_settings(session)
+            await session.commit()
+    except Exception:
+        logger.exception("Lifespan startup failed — check DATABASE_URL and credentials")
+        raise
     yield
     await engine.dispose()
 
